@@ -15,7 +15,9 @@ def read_docx(filename):
     return BS(content_xml, 'xml')
 
 def find_iter(soup, tagname):
-    # Generator function to iter through paragraphs efficiently
+    # Generator function to iter through elements of a document efficiently
+    # Does not work for a subitem of a document's soup, because it will find
+    # values outside its scope
     tag = soup.find(tagname)
     while tag is not None:
         yield tag
