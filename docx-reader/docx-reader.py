@@ -67,7 +67,7 @@ def document_summary(doc):
         runs_prop = []
         run_prop = ['b', 'bCs','i', 'iCs', 'color', 'highlight', 'vertAlign', 'u']
         try:
-            for run in find_iter(paragraph, 'r'):
+            for run in paragraph.find_all('r'):
                 prop = run.find('rPr')
                 runs_output = [try_or_none_properties(prop, x, 'w:val') for x in run_prop]
                 runs_prop.append(runs_output)
