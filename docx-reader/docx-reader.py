@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup as BS
 
 os.chdir('')
 
-
 def read_docx(filename):
     # Read the docx document and return a BeautifulSoup object
     doc = ZipFile(filename)
@@ -49,8 +48,11 @@ def document_summary(doc):
     doc = read_docx(doc)
     summary = list()
     find = False
+    tables = doc.find_all('tbl')
     for i, paragraph in enumerate(iter_paragraphs(doc)):
         text = paragraph.text
+#        if text == 'WOWOOW':
+#            return paragraph
 
         properties = paragraph.find('w:pPr')
 
@@ -82,15 +84,26 @@ def document_summary(doc):
                 tabs_prop.append([i.get('w:pos'), i.get('w:val')])
         except AttributeError:
             pass
+        
+        bookmark = try_or_none_properties(paragraph, 'bookmarkStart', 'w:id')
+        
+        for i, table in enumerate(tables):
+            if paragraph in table.find_all('p'):
+                index_table = 'table_' + str(i)
+        
+        try: index_table
+        except NameError: index_table = None
 
-        characteristics = ['text', 'paragraph_style', 'list_lvl','list_type' ,'horizontal_alignment', 'vertical_alignment',\
-                           'bold', 'italic', 'text_color', 'highlight', 'underline']
+        characteristics = ['text', 'paragraph_style', 'list_lvl','list_type' ,\
+                           'horizontal_alignment', 'vertical_alignment',\
+                           'bold', 'italic', 'text_color', 'highlight', 'underline', \
+                           'bookmark', 'table']
 
         try:
             summary.append([text, style, list_lvl, list_type, position, runs_prop[6], runs_prop[0], runs_prop[2],\
-                        runs_prop[4], runs_prop[5], runs_prop[7]])
+                        runs_prop[4], runs_prop[5], runs_prop[7], bookmark, index_table])
         except IndexError: # because of issue that doesn't allow to create a list of None in a loop
             summary.append([text, style, list_lvl, list_type, position, None, None, None,\
-                        None, None, None])
+                        None, None, None, bookmark])
             
     return pd.DataFrame(summary, columns = characteristics)
