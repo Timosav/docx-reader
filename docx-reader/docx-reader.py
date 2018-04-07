@@ -6,6 +6,8 @@ import pandas as pd
 from bs4 import BeautifulSoup as BS
 
 os.chdir('')
+#What if I add this ?
+
 
 def read_docx(filename):
     # Read the docx document and return a BeautifulSoup object
