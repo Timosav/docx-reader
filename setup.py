@@ -23,7 +23,7 @@ VERSION = None
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'bs4', 'numpy', 'pandas, 'zipfile',
+    'bs4', 'numpy', 'pandas', 'zipfile',
     # 'requests', 'maya', 'records',
 ]
 
