@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup as BS
 
-#os.chdir(')
+#os.chdir('')
 
 class docx_reader:
     def __init__(self, filename):
@@ -20,8 +20,47 @@ class docx_reader:
         # also add the cell idnex based on w:tblW w:type="dxa" w:w="8522"
         # and w:gridCol w:w="4261"
         
+        
+        tables = self.doc.find_all('tbl')
+        
+        current_table = 0
+        current_cell = 0
+        current_cell_index = [0,0]
+        current_paragraph = 0
+        current_table_width = int(tables[current_table].find('tblW').get('w:w'))
+        current_table_nb_cells = len(tables[current_table].find_all('tc'))
+        current_nb_paragraph_in_cell = [len(x.find_all('p')) for x in tables[current_table].find_all('tc')]
+               
+        
         for i, paragraph in enumerate(self._iter_paragraphs()):
             index_table = None
+            cell_index = None
+            
+            if paragraph.find_parent('tbl'):
+                current_paragraph += 1
+                cell_index = "_".join([str(int(x)) for x in current_cell_index])
+                index_table = str(current_table + 1)
+#                print(index_table)
+                add_width = int(paragraph.find_parent('tc').find('tcW').get('w:w'))/current_table_width
+                if int(current_cell_index[0]) != int(current_cell_index[0] + add_width):
+                    current_cell_index[1] = 0
+                else :
+                    current_cell_index[1] += 1
+                current_cell_index[0] += add_width
+                if current_paragraph == current_nb_paragraph_in_cell[current_cell]:
+                    current_cell += 1
+                    current_paragraph = 0
+                    if current_cell == current_table_nb_cells:
+                        current_table += 1
+                        if current_table == len(tables):
+                            pass
+                        else:
+                            current_cell = 0
+                            current_table_width = int(tables[current_table].find('tblW').get('w:w'))
+                            current_table_nb_cells = len(tables[current_table].find_all('tc'))
+                            current_nb_paragraph_in_cell = [len(x.find_all('p')) for x in tables[current_table].find_all('tc')]
+                            current_cell_index = [0,0]
+                
             
             text = paragraph.text
     
@@ -53,12 +92,14 @@ class docx_reader:
             
             bookmark = self._try_or_none_properties(paragraph, 'bookmarkStart', 'w:id')
             
-            for i, table in enumerate(tables):
-                if paragraph in table.find_all('p'):
-                    index_table = 'table_' + str(i)
+#            for i, table in enumerate(tables):
+#                if paragraph in table.find_all('p'):
+#                    index_table = 'table_' + str(i)
             
-            try : img_id = "_".join(['image', paragraph.find('cNvPr').get('id')])
-            except: img_id = None
+            if paragraph.find('cNvPr'):
+                img_id = "_".join(['image', paragraph.find('cNvPr').get('id')])
+            else:
+                img_id = None
     
             characteristics = ['text', 'paragraph_style', 'list_lvl','list_type' ,\
                                'horizontal_alignment', 'vertical_alignment',\
@@ -66,8 +107,8 @@ class docx_reader:
                                'bookmark', 'table', 'cell', 'image']
     
             try:
-                summary.append([text, style, list_lvl, list_type, position,\
-                                runs_prop[:-2], bookmark, index_table, \
+                summary.append([text, style, list_lvl, list_type, position] +            
+                                runs_prop[:-2] + [bookmark, index_table, 
                                 cell_index, img_id])
                 
             except IndexError: # because of issue that doesn't allow to create a list of None in a loop
