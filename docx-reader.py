@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup as BS
 
-os.chdir(')
+#os.chdir(')
 
 class docx_reader:
     def __init__(self, filename):
