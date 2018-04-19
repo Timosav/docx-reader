@@ -2,7 +2,7 @@
 
 Simple and easy analysis of information contained in a .docx file paragraph by paragraph.
 
-Any suggestions is welcome regarding the format of the script.
+Any suggestions is welcome !
 
 
 # 09.04.2018
